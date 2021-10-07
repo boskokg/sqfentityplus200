@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-
-
+import 'package:sqfentity/sqfentity.dart';
 // STEP 1: import sqfentity package.
 import 'package:sqfentity_gen/sqfentity_gen.dart';
-import 'package:sqfentity/sqfentity.dart';
-
 
 import 'model/model.dart'; // you do not need to import this file. Just follow next steps
 
@@ -68,9 +64,10 @@ const SqfEntityTable tableTodo = SqfEntityTable(
 // Define the 'identity' constant as SqfEntitySequence.
 const SqfEntitySequence seqIdentity = SqfEntitySequence(
   sequenceName: 'identity',
-  maxValue:  10000, /* optional. default is max int (9.223.372.036.854.775.807) */
-  //modelName: 'SQEidentity', 
-                      /* optional. SqfEntity will set it to sequenceName automatically when the modelName is null*/
+  maxValue:
+      10000, /* optional. default is max int (9.223.372.036.854.775.807) */
+  //modelName: 'SQEidentity',
+  /* optional. SqfEntity will set it to sequenceName automatically when the modelName is null*/
   //cycle : false,    /* optional. default is false; */
   //minValue = 0;     /* optional. default is 0 */
   //incrementBy = 1;  /* optional. default is 1 */
@@ -85,30 +82,28 @@ const SqfEntityModel myDbModel = SqfEntityModel(
     databaseName: 'sampleORM.db',
     // put defined tables into the tables list.
     databaseTables: [tableCategory, tableProduct, tableTodo],
-     // You can define tables to generate add/edit view forms if you want to use Form Generator property
+    // You can define tables to generate add/edit view forms if you want to use Form Generator property
     formTables: [tableProduct, tableCategory, tableTodo],
     // put defined sequences into the sequences list.
     sequences: [seqIdentity],
     bundledDatabasePath:
         null // 'assets/sample.db' // This value is optional. When bundledDatabasePath is empty then EntityBase creats a new database when initializing the database
-);
+    );
 
-/* STEP 4: That's All.. 
+/* STEP 4: That's All..
 --> Go Terminal Window and run command below
     flutter pub run build_runner build --delete-conflicting-outputs
-  Note: After running the command Please check lib/model/model.g.dart 
+  Note: After running the command Please check lib/model/model.g.dart
   Enjoy.. Huseyin TOKPINAR
 */
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  
   // ATTENTION! when the software/app is started, database will initialized.
   // If the database is not initialized, something went wrong. Check DEBUG CONSOLE for alerts
 
   await runSamples();
-  
 }
 
 Future<bool> runSamples() async {
@@ -178,7 +173,9 @@ Future<void> printCategories(bool getIsDeleted) async {
   }
   print('---------------------------------------------------------------\n\n');
 }
+
 class BundledDbModel extends SqfEntityModelProvider {}
+
 Future<String> createModelFromDatabaseSample() async {
 /* STEP 1
 
@@ -199,7 +196,6 @@ flutter:
     ..databaseName = 'chinook.db'
     ..bundledDatabasePath = 'assets/chinook.sqlite');
 
-
 // STEP 3
 // Run this function to convert the model to annotation
   final String modelConstString =
@@ -209,7 +205,7 @@ flutter:
   await Clipboard.setData(ClipboardData(text: modelConstString));
 
   /*
-      Model were created succesfuly and set to the Clipboard. 
+      Model were created succesfuly and set to the Clipboard.
 
       STEP 1:
       Open model.dart file in lib/model folder and paste models after following line
@@ -260,7 +256,7 @@ import 'package:sqfentity_base/sqfentity_base.dart';''')
   /* also you can generate model.g.dart as following:
   --> Go Terminal Window and run command below
     flutter pub run build_runner build --delete-conflicting-outputs
-  Note: After running the command Please check lib/model/model.g.dart 
+  Note: After running the command Please check lib/model/model.g.dart
   */
   // Notice: Keyboard shortcuts are not working on the emulator.
   // To copy for your model, click on the cursor in the TextField than open tooltip menu in the emulator.
@@ -278,6 +274,7 @@ Future<void> printProducts() async {
   }
   print('---------------------------------------------------------------\n\n');
 }
+
 Future<void> samples1() async {
 // EXAMPLE 1.1: SELECT * FROM PRODUCTS
   await printProducts();
@@ -817,7 +814,7 @@ Future<void> samples8() async {
 Future<void> samples9() async {
   // EX.9.1 Execute custom SQL command on database
   final sql_91 = 'UPDATE product set isActive=1 where isActive=1';
-  final result_91 = await MyDbModel().execSQL(sql_91);
+  final result_91 = await MyDbModel().execSQLNB(sql_91);
   print(
       'EX.9.1 Execute custom SQL command on database\n -> final sql=\'$sql_91\';\n -> MyDbModel().execSQL(sql)  \n -> print result = ${result_91.toString()}');
 
@@ -826,7 +823,7 @@ Future<void> samples9() async {
     ..add('UPDATE product set isActive=1 where isActive=1')
     ..add('UPDATE product set isActive=0 where isActive=0');
 
-  final result_92 = await MyDbModel().execSQLList(sqlList);
+  final result_92 = await MyDbModel().execSQLListNB(sqlList);
   print(
       'EX.9.2 Execute custom SQL command List on database\n -> final sqlList=List<String>();\n -> MyDbModel().execSQLList(sqlList);  \n -> print result = ${result_92.toString()}');
 
@@ -1023,7 +1020,6 @@ Future<bool> addProducts() async {
   }
   return true;
 }
-
 
 void sampleModelConvert() {
   final seq = SqfEntitySequenceBase()

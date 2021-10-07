@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:sqfentity/sqfentity.dart';
 import 'package:sqfentity_gen/sqfentity_gen.dart';
 
@@ -89,12 +90,12 @@ const SqfEntityModel myDbModel = SqfEntityModel(
     // EntityBase creats a new database when initializing the database
     );
 
-/* STEP 3: That's All.. 
+/* STEP 3: That's All..
 --> Go Terminal Window and run command below
     flutter pub run build_runner build --delete-conflicting-outputs
-  Note: After running the command Please check lib/model/model.g.dart and 
+  Note: After running the command Please check lib/model/model.g.dart and
         lib/model/model.g.view.dart (If formTables parameter is defined in the model)
-  
+
   Enjoy.. Huseyin TOKPINAR
 */
 
@@ -527,7 +528,7 @@ class Product {
   /// <returns>Returns productId
   Future<int> save() async {
     if (productId == null || productId == 0) {
-      productId = await _mnProduct.insert(this);
+      productId = await _mnProduct.insertNB(this);
 
       if (productId != null) {
         rownum = await IdentitySequence().nextVal();
@@ -552,7 +553,7 @@ class Product {
   /// saveAll method saves the sent List<Product> as a bulk in one transaction
   /// Returns a <List<BoolResult>>
   Future<List<BoolResult>> saveAll(List<Product> products) async {
-    final results = _mnProduct.saveAll(
+    final results = _mnProduct.saveAllNB(
         'INSERT OR REPLACE INTO product (productId,  name, description, price, isActive, categoryId, rownum, imageUrl, datetime, date,isDeleted)  VALUES (?,?,?,?,?,?,?,?,?,?,?)',
         products);
     return results;
@@ -563,7 +564,7 @@ class Product {
   /// <returns>Returns productId
   Future<int> _upsert() async {
     try {
-      productId = await _mnProduct.rawInsert(
+      productId = await _mnProduct.rawInsertNB(
           'INSERT OR REPLACE INTO product (productId,  name, description, price, isActive, categoryId, rownum, imageUrl, datetime, date,isDeleted)  VALUES (?,?,?,?,?,?,?,?,?,?,?)',
           [
             productId,
@@ -594,7 +595,7 @@ class Product {
   /// upsertAll() method is faster then saveAll() method. upsertAll() should be used when you are sure that the primary key is greater than zero
   /// Returns a <List<BoolResult>>
   Future<BoolCommitResult> upsertAll(List<Product> products) async {
-    final results = await _mnProduct.rawInsertAll(
+    final results = await _mnProduct.rawInsertAllNB(
         'INSERT OR REPLACE INTO product (productId,  name, description, price, isActive, categoryId, rownum, imageUrl, datetime, date,isDeleted)  VALUES (?,?,?,?,?,?,?,?,?,?,?)',
         products);
     return results;
@@ -606,10 +607,10 @@ class Product {
   Future<BoolResult> delete([bool hardDelete = false]) async {
     print('SQFENTITIY: delete Product invoked (productId=$productId)');
     if (!_softDeleteActivated || hardDelete || isDeleted) {
-      return _mnProduct.delete(
+      return _mnProduct.deleteNB(
           QueryParams(whereString: 'productId=?', whereArguments: [productId]));
     } else {
-      return _mnProduct.updateBatch(
+      return _mnProduct.updateBatchNB(
           QueryParams(whereString: 'productId=?', whereArguments: [productId]),
           {'isDeleted': 1});
     }
@@ -621,7 +622,7 @@ class Product {
   Future<BoolResult> recover([bool recoverChilds = true]) async {
     print('SQFENTITIY: recover Product invoked (productId=$productId)');
     {
-      return _mnProduct.updateBatch(
+      return _mnProduct.updateBatchNB(
           QueryParams(whereString: 'productId=?', whereArguments: [productId]),
           {'isDeleted': 0});
     }
@@ -664,7 +665,7 @@ class Product {
       ],
       customCode: '''
        String fullName()
-       { 
+       {
          return '$firstName $lastName';
        }
       ''');
@@ -1179,9 +1180,9 @@ class ProductFilterBuilder extends SearchCriteria {
     _buildParameters();
     var r = BoolResult(success: false);
     if (Product._softDeleteActivated && !hardDelete) {
-      r = await _obj._mnProduct.updateBatch(qparams, {'isDeleted': 1});
+      r = await _obj._mnProduct.updateBatchNB(qparams, {'isDeleted': 1});
     } else {
-      r = await _obj._mnProduct.delete(qparams);
+      r = await _obj._mnProduct.deleteNB(qparams);
     }
     return r;
   }
@@ -1190,7 +1191,7 @@ class ProductFilterBuilder extends SearchCriteria {
     _getIsDeleted = true;
     _buildParameters();
     print('SQFENTITIY: recover Product bulk invoked');
-    return _obj._mnProduct.updateBatch(qparams, {'isDeleted': 0});
+    return _obj._mnProduct.updateBatchNB(qparams, {'isDeleted': 0});
   }
 
   /// using:
@@ -1204,7 +1205,7 @@ class ProductFilterBuilder extends SearchCriteria {
       qparams.whereString =
           'productId IN (SELECT productId from product ${qparams.whereString.isNotEmpty ? 'WHERE ${qparams.whereString}' : ''}${qparams.limit > 0 ? ' LIMIT ${qparams.limit}' : ''}${qparams.offset > 0 ? ' OFFSET ${qparams.offset}' : ''})';
     }
-    return _obj._mnProduct.updateBatch(qparams, values);
+    return _obj._mnProduct.updateBatchNB(qparams, values);
   }
 
   /// This method always returns ProductObj if exist, otherwise returns null
@@ -1631,7 +1632,7 @@ class Category {
   /// <returns>Returns categoryId
   Future<int> save() async {
     if (categoryId == null || categoryId == 0) {
-      categoryId = await _mnCategory.insert(this);
+      categoryId = await _mnCategory.insertNB(this);
     } else {
       categoryId = await _upsert();
     }
@@ -1651,7 +1652,7 @@ class Category {
   /// saveAll method saves the sent List<Category> as a bulk in one transaction
   /// Returns a <List<BoolResult>>
   Future<List<BoolResult>> saveAll(List<Category> categories) async {
-    final results = _mnCategory.saveAll(
+    final results = _mnCategory.saveAllNB(
         'INSERT OR REPLACE INTO category (categoryId,  name, isActive)  VALUES (?,?,?)',
         categories);
     return results;
@@ -1662,7 +1663,7 @@ class Category {
   /// <returns>Returns categoryId
   Future<int> _upsert() async {
     try {
-      categoryId = await _mnCategory.rawInsert(
+      categoryId = await _mnCategory.rawInsertNB(
           'INSERT OR REPLACE INTO category (categoryId,  name, isActive)  VALUES (?,?,?)',
           [categoryId, name, isActive]);
       saveResult = BoolResult(
@@ -1682,7 +1683,7 @@ class Category {
   /// upsertAll() method is faster then saveAll() method. upsertAll() should be used when you are sure that the primary key is greater than zero
   /// Returns a <List<BoolResult>>
   Future<BoolCommitResult> upsertAll(List<Category> categories) async {
-    final results = await _mnCategory.rawInsertAll(
+    final results = await _mnCategory.rawInsertAllNB(
         'INSERT OR REPLACE INTO category (categoryId,  name, isActive)  VALUES (?,?,?)',
         categories);
     return results;
@@ -1705,10 +1706,10 @@ class Category {
       return result;
     }
     if (!_softDeleteActivated || hardDelete) {
-      return _mnCategory.delete(QueryParams(
+      return _mnCategory.deleteNB(QueryParams(
           whereString: 'categoryId=?', whereArguments: [categoryId]));
     } else {
-      return _mnCategory.updateBatch(
+      return _mnCategory.updateBatchNB(
           QueryParams(
               whereString: 'categoryId=?', whereArguments: [categoryId]),
           {'isDeleted': 1});
@@ -1748,7 +1749,7 @@ class Category {
       ],
       customCode: '''
        String fullName()
-       { 
+       {
          return '$firstName $lastName';
        }
       ''');
@@ -2230,9 +2231,9 @@ class CategoryFilterBuilder extends SearchCriteria {
         .delete(hardDelete);
 
     if (Category._softDeleteActivated && !hardDelete) {
-      r = await _obj._mnCategory.updateBatch(qparams, {'isDeleted': 1});
+      r = await _obj._mnCategory.updateBatchNB(qparams, {'isDeleted': 1});
     } else {
-      r = await _obj._mnCategory.delete(qparams);
+      r = await _obj._mnCategory.deleteNB(qparams);
     }
     return r;
   }
@@ -2248,7 +2249,7 @@ class CategoryFilterBuilder extends SearchCriteria {
       qparams.whereString =
           'categoryId IN (SELECT categoryId from category ${qparams.whereString.isNotEmpty ? 'WHERE ${qparams.whereString}' : ''}${qparams.limit > 0 ? ' LIMIT ${qparams.limit}' : ''}${qparams.offset > 0 ? ' OFFSET ${qparams.offset}' : ''})';
     }
-    return _obj._mnCategory.updateBatch(qparams, values);
+    return _obj._mnCategory.updateBatchNB(qparams, values);
   }
 
   /// This method always returns CategoryObj if exist, otherwise returns null
@@ -2631,7 +2632,7 @@ class Todo {
   /// <returns>Returns id
   Future<int> save() async {
     if (id == null || id == 0 || !isSaved) {
-      id = await _mnTodo.insert(this);
+      id = await _mnTodo.insertNB(this);
       isSaved = true;
     } else {
       id = await _upsert();
@@ -2652,7 +2653,7 @@ class Todo {
   /// saveAll method saves the sent List<Todo> as a bulk in one transaction
   /// Returns a <List<BoolResult>>
   Future<List<BoolResult>> saveAll(List<Todo> todos) async {
-    final results = _mnTodo.saveAll(
+    final results = _mnTodo.saveAllNB(
         'INSERT OR REPLACE INTO todos (id,  userId, title, completed)  VALUES (?,?,?,?)',
         todos);
     return results;
@@ -2663,7 +2664,7 @@ class Todo {
   /// <returns>Returns id
   Future<int> _upsert() async {
     try {
-      id = await _mnTodo.rawInsert(
+      id = await _mnTodo.rawInsertNB(
           'INSERT OR REPLACE INTO todos (id,  userId, title, completed)  VALUES (?,?,?,?)',
           [id, userId, title, completed]);
       saveResult = BoolResult(
@@ -2681,7 +2682,7 @@ class Todo {
   /// upsertAll() method is faster then saveAll() method. upsertAll() should be used when you are sure that the primary key is greater than zero
   /// Returns a <List<BoolResult>>
   Future<BoolCommitResult> upsertAll(List<Todo> todos) async {
-    final results = await _mnTodo.rawInsertAll(
+    final results = await _mnTodo.rawInsertAllNB(
         'INSERT OR REPLACE INTO todos (id,  userId, title, completed)  VALUES (?,?,?,?)',
         todos);
     return results;
@@ -2694,9 +2695,9 @@ class Todo {
     print('SQFENTITIY: delete Todo invoked (id=$id)');
     if (!_softDeleteActivated || hardDelete) {
       return _mnTodo
-          .delete(QueryParams(whereString: 'id=?', whereArguments: [id]));
+          .deleteNB(QueryParams(whereString: 'id=?', whereArguments: [id]));
     } else {
-      return _mnTodo.updateBatch(
+      return _mnTodo.updateBatchNB(
           QueryParams(whereString: 'id=?', whereArguments: [id]),
           {'isDeleted': 1});
     }
@@ -2735,7 +2736,7 @@ class Todo {
       ],
       customCode: '''
        String fullName()
-       { 
+       {
          return '$firstName $lastName';
        }
       ''');
@@ -3215,9 +3216,9 @@ class TodoFilterBuilder extends SearchCriteria {
     _buildParameters();
     var r = BoolResult(success: false);
     if (Todo._softDeleteActivated && !hardDelete) {
-      r = await _obj._mnTodo.updateBatch(qparams, {'isDeleted': 1});
+      r = await _obj._mnTodo.updateBatchNB(qparams, {'isDeleted': 1});
     } else {
-      r = await _obj._mnTodo.delete(qparams);
+      r = await _obj._mnTodo.deleteNB(qparams);
     }
     return r;
   }
@@ -3233,7 +3234,7 @@ class TodoFilterBuilder extends SearchCriteria {
       qparams.whereString =
           'id IN (SELECT id from todos ${qparams.whereString.isNotEmpty ? 'WHERE ${qparams.whereString}' : ''}${qparams.limit > 0 ? ' LIMIT ${qparams.limit}' : ''}${qparams.offset > 0 ? ' OFFSET ${qparams.offset}' : ''})';
     }
-    return _obj._mnTodo.updateBatch(qparams, values);
+    return _obj._mnTodo.updateBatchNB(qparams, values);
   }
 
   /// This method always returns TodoObj if exist, otherwise returns null
