@@ -1,11 +1,13 @@
 name: sqfentity
 homepage: https://github.com/hhtokpinar/sqfEntity
-description: SqfEntity ORM for Flutter/Dart lets you build and execute SQL commands easily and quickly with the help of fluent methods similar to .Net Entity Framework. 
+description: SqfEntity ORM for Flutter/Dart lets you build and execute SQL commands easily and quickly with the help of fluent methods similar to .Net Entity Framework.
 
 version: 2.0.0
 
+publish_to: none
+
 environment:
-  sdk: ">=2.12.0 <3.0.0"
+  sdk: ">=2.17.3 <3.0.0"
 
 dependencies:
   flutter:
@@ -14,7 +16,10 @@ dependencies:
   #sqflite: ^2.0.0+2
   synchronized: ">=3.0.0 <4.0.0"
   path: ">=1.6.2 <2.0.0"
-  sqfentity_gen: '>=2.0.0 <3.0.0'
+  sqfentity_gen:
+    git:
+      url: https://github.com/boskokg/sqfentitygenplus200/
+      ref: master
   sqflite_common: ^2.0.0+2
   sqflite_common_ffi: ^2.0.0
 
@@ -22,4 +27,4 @@ dependencies:
 
 # dependency_overrides:
 #  sqfentity_gen:
-#    path: ../sqfentity_gen        
+#    path: ../sqfentity_gen
